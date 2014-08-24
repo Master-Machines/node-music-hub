@@ -4,13 +4,21 @@ var height;
 var width;
 var Visualizer;
 
+
+// e33571 cool pink
+// 5ddb3a neon green
+// 9966ff purple
+var colors = ['#e33571','#5ddb3a','#9966ff']
+
+
 $(function() {
 	height = $(window).height();
 	width = $(window).width();
-	Visualizer = new Visualizer();
+	Visualizer = new Visualizer(colors[randomIntFromInterval(0, colors.length -1)]);
 	socket.on('update', function (data) {
 	  Visualizer.updatePoints(data.buffer);
 	});
+	$("body").css({"background-color": '#000'});
 });
 // Whenever the server emits 'login', log the login message
 socket.on('beat', function (data) {
@@ -36,29 +44,41 @@ function beat(power) {
 // }, 120)
 
 
-function Visualizer () {
+function Visualizer (primaryColor) {
+	this.primaryColor = primaryColor;
 	this.paper = new Raphael(0, 0, width, height);
-	this.createPoints(64);
+	this.createPoints(256);
+	
 }
 
 Visualizer.prototype.createPoints = function(numberOfPoints) {
 	this.yPosition = parseInt(height/2);
-	this.middleLine = this.paper.rect(0,this.yPosition - 1, width, 2).attr({fill : "#555", 'stroke-opacity' : 0})
+	//this.middleLine = this.paper.rect(0,this.yPosition - 1, width, 2).attr({fill : "#AAA", 'stroke-opacity' : 0})
 	this.xDiff = width/numberOfPoints;
 	var pathString = "M0," + this.yPosition;
 	this.numberOfPoints = numberOfPoints;
 	for(var i = 0; i < this.numberOfPoints; i++) {
 		pathString += "L" + this.xDiff * i + ',' +  this.yPosition
 	}
-	this.path = this.paper.path(pathString).attr({'stroke' : '#e33571', 'stroke-width' : this.xDiff});
+	this.path = this.paper.path(pathString).attr({'stroke' : this.primaryColor, 'stroke-width' : 2, 'fill' : this.primaryColor});
 }
 
 Visualizer.prototype.updatePoints = function(buffer) {
 	var pathString = "M0," + this.yPosition;
 	for(var i = 0; i < this.numberOfPoints; i++) {
-		pathString += "L" + this.xDiff * i + ',' +  this.yPosition;
-		pathString += "L" + this.xDiff * i + ',' +  parseInt(this.yPosition + buffer[i] * 10);
+		//pathString += "L" + this.xDiff * i + ',' +  this.yPosition;
+		
+		var movementAmount = parseInt(this.yPosition - buffer[i]* 1000);
+		pathString += "L" + this.xDiff * i + ',' + movementAmount;
 		pathString += "L" + this.xDiff * i + ',' +  this.yPosition;
 	}
+	pathString += "M" + width + "," + this.yPosition;
+	pathString += "M0," + this.yPosition;
 	this.path.attr({path :  pathString});
+}
+
+
+function randomIntFromInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
 }

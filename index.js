@@ -17,7 +17,7 @@ var engine = coreAudio.createNewAudioEngine();
 engine.setOptions({ inputChannels: 1, outputChannels: 2, interleaved: true, inputDevice: 1 });
 engine.setOptions({
 	inputDevice :2,});
-var totalFrequencies = 64;
+var totalFrequencies = 256;
 var fft = new FFT.complex(1024, 1)
 var sample = 0;
 var ampBuffer = new Float32Array(4000);
@@ -62,16 +62,17 @@ function processAudio( buffer ) {
         //ampBuffer[sample%ampBuffer.length] = buffer[i];
     }
   	
-    if(++counter2 == 30) {
-    	var frequencies = new Array(1024)
-  		fft.process(frequencies, 0, 1, buffer, 0, 1, 'real')
+    if(++counter2 == 4) {
     	counter2 = 0;
-    	var cutoffFrequencies = frequencies.slice(0, totalFrequencies);
-    	io.sockets.emit("update", {buffer : cutoffFrequencies});
+    // 	var frequencies = new Array(1024)
+  		// fft.process(frequencies, 0, 1, buffer, 0, 1, 'real')
+    	
+    // 	var cutoffFrequencies = frequencies.slice(0, totalFrequencies);
+    	io.sockets.emit("update", {buffer : buffer});
     }
     
     //SendBeatPower(counter);
-    addItUp(output)
+    //addItUp(output)
     return output;
 }
 var superCounter = 0;
